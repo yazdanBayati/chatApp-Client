@@ -10,6 +10,7 @@ export class ChatApi {
     this.userUrl = `/users`;
     this.messageUrl = `/messages`;
     this.groupUserUrl = `usergroups`;
+    this.configureInterceptors();
   }
 
   addGroup = async (data) => {
@@ -19,6 +20,23 @@ export class ChatApi {
       },
     };
     return this.instance.post(this.groupUrl, data, config);
+  };
+
+  registerUser = async (data) => {
+    let config = {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    };
+    return this.instance.post(`${this.userUrl}/register`, data, config);
+  };
+  login = async (data) => {
+    let config = {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    };
+    return this.instance.post(`${this.userUrl}/login`, data, config);
   };
 
   getAllGroups = async () => {
@@ -48,10 +66,10 @@ export class ChatApi {
       console.error(e);
     }
   };
-  getMessages = async (groupId) => {
+  getUserById = async (userId) => {
     try {
       const response = await this.instance.get(
-        `${this.groupUserUrl}/${groupId}/getgroupmessages`
+        `${this.userUrl}/${userId}/getuserbyid`
       );
 
       if (!response.data.success) {
@@ -62,4 +80,48 @@ export class ChatApi {
       console.error(e);
     }
   };
+  getMessages = async (groupId) => {
+    try {
+      const response = await this.instance.get(
+        `${this.messageUrl}/${groupId}/getgroupmessages`
+      );
+
+      if (!response.data.success) {
+        throw new Error('calling usergroup list failed ...');
+      }
+      return response.data.data;
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  configureInterceptors() {
+    this.instance.interceptors.request.use(
+      (config) => {
+        var json = localStorage.getItem('login');
+        if (json) {
+          const auth = JSON.parse(json);
+          if (auth) {
+            config.headers = {
+              ...config.headers,
+              Authorization: 'Bearer ' + auth.token,
+            };
+          }
+        }
+        return config;
+      },
+      (error) => {
+        console.error('Request error ==============');
+      }
+    );
+
+    this.instance.interceptors.response.use(
+      (resp) => {
+        return resp;
+      },
+      (error) => {
+        console.error('Response error ==============');
+      }
+    );
+  }
 }

@@ -8,22 +8,28 @@ import CreateGroup from './Group/CreateGroup';
 class ChatContainer extends React.Component {
   constructor() {
     super();
+
+    var json = localStorage.getItem('login');
+    if (!json) {
+      console.error('token not exist');
+    }
+    const auth = JSON.parse(json);
+
     this.state = {
-      groupList: [{ id: 1, title: 'group1', chat: [], seen: false }],
+      groupList: [],
       currentUserGroups: [],
       selectedGroup: null,
       anyGroupSelected: false,
       connection: null,
       isUserHasSelectedGroup: false,
+      auth: auth,
     };
-    this.latestChat = createRef();
-    this.latestChat.current = [];
     this.api = new ChatApi();
   }
 
   componentDidMount() {
     this.callApis();
-    this.connection = buildConention();
+    this.connection = buildConention(this.state.auth);
     // this.setState((prevState) => {
     //   return { ...prevState, connection: newConnection };
     // });
@@ -50,36 +56,60 @@ class ChatContainer extends React.Component {
 
   callApis = async () => {
     const groups = await this.api.getAllGroups();
-    const userGroups = await this.api.getUserGroups(1); //todo : need to get from athnitcate user
-
-    this.setState((prevState) => {
-      return { ...prevState, groupList: groups, currentUserGroups: userGroups };
+    const userGroups = await this.api.getUserGroups(this.state.auth.userId * 1);
+    const user = await this.api.getUserById(this.state.auth.userId * 1);
+    var groupsWithChats = groups.map((group) => {
+      var chat = createRef();
+      chat.current = [];
+      return { ...group, chat: chat };
     });
-  };
-
-  handlGroupClick = (item) => {
-    const isUserHasSelectedGroup = this.state.currentUserGroups.some(
-      (x) => x.id === item.id
-    ); // if user doesn't have this group show the join button
-
-    if (isUserHasSelectedGroup && !this.state.selectedGroup.seen) {
-      const messages = this.api.getMessages(item.id);
-      messages.map((message) => {
-        this.buildAndsetChat(message);
-      });
-    }
-
-    this.setState((prevSate) => {
+    this.setState((prevState) => {
       return {
-        ...prevSate,
-        selectedGroup: item,
-        anyGroupSelected: true,
-        isUserHasSelectedGroup: isUserHasSelectedGroup,
+        ...prevState,
+        groupList: groupsWithChats,
+        currentUserGroups: userGroups,
+        currentUser: user,
       };
     });
   };
 
+  handlGroupClick = async (item) => {
+    const isUserHasSelectedGroup = this.state.currentUserGroups.some(
+      (x) => x.groupId === item.id
+    ); // if user doesn't have this group show the join button
+
+    if (isUserHasSelectedGroup && !item.seen) {
+      item.seen = true;
+      this.setState((prevSate) => {
+        return {
+          ...prevSate,
+          selectedGroup: item,
+          anyGroupSelected: true,
+          isUserHasSelectedGroup: isUserHasSelectedGroup,
+        };
+      });
+
+      const messages = await this.api.getMessages(item.id);
+      if (messages) {
+        messages.map((message) => {
+          this.buildAndsetChat(message);
+        });
+      }
+    } else {
+      this.setState((prevSate) => {
+        return {
+          ...prevSate,
+          selectedGroup: item,
+          anyGroupSelected: true,
+          isUserHasSelectedGroup: isUserHasSelectedGroup,
+        };
+      });
+    }
+  };
+
   setGroup(group) {
+    group.chat = createRef();
+    group.chat.current = [];
     this.setState((prevState) => {
       return {
         ...prevState,
@@ -89,39 +119,42 @@ class ChatContainer extends React.Component {
   }
 
   buildAndsetChat(message) {
-    const updatedChat = [...this.latestChat.current];
-    updatedChat.push(message);
-    var groupList = this.state.groupList;
-    var group = groupList.filter((x) => x.title === message.groupName)[0];
-    group.chat = updatedChat;
-    this.latestChat.current = group.chat;
-
     this.setState((prevState) => {
       return {
         ...prevState,
-        groupList: groupList,
+        selectedGroup: {
+          ...prevState.selectedGroup,
+          chat: {
+            ...prevState.selectedGroup.chat,
+            current: [...prevState.selectedGroup.chat.current, message],
+          },
+        },
       };
     });
   }
 
   handleJoinGroup = async () => {
     const currentGroup = this.state.currentUserGroups.filter(
-      (x) => x.id === this.state.selectedGroup.id
+      (x) => x.groupId === this.state.selectedGroup.id
     )[0];
     if (!currentGroup) {
       if (this.connection.connectionStarted) {
         try {
           const mesg = {
-            userId: 1, //todo
-            groupId: this.state.selectedGroup.groupId,
+            userId: this.state.auth.userId * 1,
+            groupId: this.state.selectedGroup.id,
           };
           await this.connection.invoke('JoinGroup', mesg);
+          const newuserGroupItem = {
+            userId: this.state.auth.userId,
+            groupId: this.state.selectedGroup.id,
+          };
           this.setState((prevSate) => {
             return {
               ...prevSate,
               currentUserGroups: [
                 ...prevSate.currentUserGroups,
-                this.state.selectedGroup,
+                newuserGroupItem,
               ],
               isUserHasSelectedGroup: true,
             };
@@ -152,6 +185,7 @@ class ChatContainer extends React.Component {
     if (this.connection.connectionStarted) {
       message.groupName = this.state.selectedGroup.name;
       message.groupId = this.state.selectedGroup.id;
+      message.user = this.state.currentUser.userName;
       try {
         await this.connection.invoke('SendMessageToGroup', message);
       } catch (e) {
@@ -191,7 +225,7 @@ class ChatContainer extends React.Component {
                 ) : (
                   <Chat
                     onSendMessage={this.sendMessage}
-                    chat={this.state.selectedGroup.chat}
+                    chat={this.state.selectedGroup.chat.current}
                   ></Chat>
                 )}
               </div>

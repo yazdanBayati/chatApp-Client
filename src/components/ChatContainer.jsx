@@ -1,4 +1,4 @@
-import React, { createRef, useRef } from 'react';
+import React, { createRef } from 'react';
 import { Grid, Button } from '@material-ui/core';
 import GroupList from './Group/GroupList';
 import Chat from './Chat';
@@ -131,6 +131,7 @@ class ChatContainer extends React.Component {
         },
       };
     });
+    return message;
   }
 
   handleJoinGroup = async () => {

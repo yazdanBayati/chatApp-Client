@@ -1,4 +1,4 @@
-import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
+import { LogLevel } from '@microsoft/signalr';
 
 import { MessagePackHubProtocol } from '@microsoft/signalr-protocol-msgpack';
 

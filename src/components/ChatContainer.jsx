@@ -205,7 +205,7 @@ class ChatContainer extends React.Component {
           <CreateGroup onCreateGroup={this.handleCreateGroup} />
         </Grid>
         <Grid container>
-          <Grid xs={4}>
+          <Grid item xs={4}>
             {this.state.groupList && (
               <GroupList
                 onGroupClick={this.handlGroupClick}
@@ -213,7 +213,7 @@ class ChatContainer extends React.Component {
               />
             )}
           </Grid>
-          <Grid xs={8}>
+          <Grid item xs={8}>
             {this.state.anyGroupSelected && (
               <div>
                 {!this.state.isUserHasSelectedGroup ? (

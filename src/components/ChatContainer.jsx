@@ -91,9 +91,10 @@ class ChatContainer extends React.Component {
 
       const messages = await this.api.getMessages(item.id);
       if (messages) {
-        messages.map((message) => {
-          this.buildAndsetChat(message);
+        var res = messages.map((message) => {
+          return this.buildAndsetChat(message);
         });
+        console.log(res);
       }
     } else {
       this.setState((prevSate) => {

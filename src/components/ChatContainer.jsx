@@ -95,7 +95,9 @@ class ChatContainer extends React.Component {
 
       group.chat.current = [];
 
-      item.chat.current = [];
+      if (item.chat) {
+        item.chat.current = [];
+      }
 
       this.setState((prevSate) => {
         return {

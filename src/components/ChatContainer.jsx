@@ -88,10 +88,22 @@ class ChatContainer extends React.Component {
 
     if (isUserHasSelectedGroup) {
       item.seen = true;
+
+      var groups = this.state.groupList;
+
+      var group = groups.filter((x) => x.id === item.id);
+
+      group.chat.current = [];
+
       this.setState((prevSate) => {
         return {
           ...prevSate,
           selectedGroup: item,
+          groupList: groups,
+          selectedGroup: {
+            ...prevSate.selectedGroup,
+            chat: { ...prevSate.selectedGroup.chat, current: [] },
+          },
           anyGroupSelected: true,
           isUserHasSelectedGroup: isUserHasSelectedGroup,
         };

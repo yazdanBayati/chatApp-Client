@@ -129,21 +129,38 @@ class ChatContainer extends React.Component {
 
   buildAndsetChat(message) {
     const groups = this.state.groupList;
-    const group = groups.filter((x) => x.id === this.state.selectedGroup.id)[0];
+    const group = groups.filter((x) => x.id === message.groupId)[0];
     group.chat.current.push(message);
+
+    // if (group.id === this.state.selectedGroup.id) {
+    //   this.setState((prevState) => {
+    //     return {
+    //       ...prevState,
+    //       groupList: groups,
+    //       selectedGroup: {
+    //         ...prevState.selectedGroup,
+    //         chat: {
+    //           ...prevState.selectedGroup.chat,
+    //           current: [...prevState.selectedGroup.chat.current, message],
+    //         },
+    //       },
+    //     };
+    //   });
+    // } else {
     this.setState((prevState) => {
       return {
         ...prevState,
         groupList: groups,
-        selectedGroup: {
-          ...prevState.selectedGroup,
-          chat: {
-            ...prevState.selectedGroup.chat,
-            current: [...prevState.selectedGroup.chat.current, message],
-          },
-        },
+        // selectedGroup: {
+        //   ...prevState.selectedGroup,
+        //   chat: {
+        //     ...prevState.selectedGroup.chat,
+        //     current: [...prevState.selectedGroup.chat.current, message],
+        //   },
+        // },
       };
     });
+    // }
     return message;
   }
 
@@ -194,20 +211,31 @@ class ChatContainer extends React.Component {
             groupId: this.state.selectedGroup.id,
           };
           await this.connection.invoke('LeftGroup', mesg);
+          window.location.reload();
+          // var currentUserGroup = this.state.currentUserGroups;
+          // var index = currentUserGroup.findIndex(
+          //   (x) => x.groupId === this.state.selectedGroup.id
+          // );
+          // currentUserGroup.splice(index, 1);
 
-          var currentUserGroup = this.state.currentUserGroups;
-          var index = currentUserGroup.findIndex(
-            (x) => x.groupId === this.state.selectedGroup.id
-          );
-          currentUserGroup.splice(index, 1);
+          // var groups = this.state.groupList;
+          // var group = groups.filter(
+          //   (x) => x.id === this.state.selectedGroup.id
+          // )[0];
+          // group.chat.current = [];
 
-          this.setState((prevSate) => {
-            return {
-              ...prevSate,
-              currentUserGroups: currentUserGroup,
-              isUserHasSelectedGroup: false,
-            };
-          });
+          // this.setState((prevSate) => {
+          //   return {
+          //     ...prevSate,
+          //     currentUserGroups: currentUserGroup,
+          //     groupList: groups,
+          //     isUserHasSelectedGroup: false,
+          //     selectedGroup: {
+          //       ...prevSate.selectedGroup,
+          //       chat: { ...prevSate.selectedGroup.chat, current: [] },
+          //     },
+          //   };
+          // });
         } catch (e) {
           console.error(e);
         }

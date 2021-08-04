@@ -10,7 +10,7 @@ export const buildConention = (auth) => {
     })
     .configureLogging(LogLevel.Trace)
     .withAutomaticReconnect()
-    //.withHubProtocol(new MessagePackHubProtocol())
+    // .withHubProtocol(new MessagePackHubProtocol())
     .build();
 
   return newConnection;

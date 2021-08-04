@@ -2,7 +2,7 @@ import axios from 'axios';
 export class ChatApi {
   constructor() {
     this.instance = axios.create({
-      // baseURL: 'http://localhost:34908', //todo
+      //baseURL: 'http://localhost:34908', //todo
       baseURL: 'https://chat-api-yazdan.azurewebsites.net', //todo
       timeout: 30000,
       headers: {},

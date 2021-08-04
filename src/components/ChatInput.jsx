@@ -42,7 +42,7 @@ const ChatInput = (props) => {
           </Grid>
           <Grid xs={1} align="right">
             <Fab color="primary" aria-label="add">
-              <SendIcon onClick={onSubmit} />
+              <SendIcon fontSize="large" onClick={onSubmit} />
             </Fab>
           </Grid>
         </Grid>

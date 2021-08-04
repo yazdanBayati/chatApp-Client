@@ -95,15 +95,17 @@ class ChatContainer extends React.Component {
 
       group.chat.current = [];
 
+      item.chat.current = [];
+
       this.setState((prevSate) => {
         return {
           ...prevSate,
           selectedGroup: item,
           groupList: groups,
-          selectedGroup: {
-            ...prevSate.selectedGroup,
-            chat: { ...prevSate.selectedGroup.chat, current: [] },
-          },
+          // selectedGroup: {
+          //   ...prevSate.selectedGroup,
+          //   chat: { ...prevSate.selectedGroup.chat, current: [] },
+          // },
           anyGroupSelected: true,
           isUserHasSelectedGroup: isUserHasSelectedGroup,
         };

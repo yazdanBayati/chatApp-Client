@@ -1,10 +1,18 @@
 import React, { createRef } from 'react';
-import { Grid, Button } from '@material-ui/core';
+import {
+  Grid,
+  Button,
+  Typography,
+  Paper,
+  AppBar,
+  Toolbar,
+} from '@material-ui/core';
 import GroupList from './Group/GroupList';
 import Chat from './Chat';
 import { buildConention } from '../Utilites/SignalRUtitlity';
 import { ChatApi } from '../apis/chatApi';
 import CreateGroup from './Group/CreateGroup';
+import './ChatContainer.css';
 class ChatContainer extends React.Component {
   constructor() {
     super();
@@ -120,9 +128,13 @@ class ChatContainer extends React.Component {
   }
 
   buildAndsetChat(message) {
+    const groups = this.state.groupList;
+    const group = groups.filter((x) => x.id === this.state.selectedGroup.id)[0];
+    group.chat.current.push(message);
     this.setState((prevState) => {
       return {
         ...prevState,
+        groupList: groups,
         selectedGroup: {
           ...prevState.selectedGroup,
           chat: {
@@ -170,6 +182,41 @@ class ChatContainer extends React.Component {
     }
   };
 
+  handleLeftGroup = async () => {
+    const currentGroup = this.state.currentUserGroups.filter(
+      (x) => x.groupId === this.state.selectedGroup.id
+    )[0];
+    if (currentGroup) {
+      if (this.connection.connectionStarted) {
+        try {
+          const mesg = {
+            userId: this.state.auth.userId * 1,
+            groupId: this.state.selectedGroup.id,
+          };
+          await this.connection.invoke('LeftGroup', mesg);
+
+          var currentUserGroup = this.state.currentUserGroups;
+          var index = currentUserGroup.findIndex(
+            (x) => x.groupId === this.state.selectedGroup.id
+          );
+          currentUserGroup.splice(index, 1);
+
+          this.setState((prevSate) => {
+            return {
+              ...prevSate,
+              currentUserGroups: currentUserGroup,
+              isUserHasSelectedGroup: false,
+            };
+          });
+        } catch (e) {
+          console.error(e);
+        }
+      } else {
+        alert('No connection to server yet.');
+      }
+    }
+  };
+
   handleCreateGroup = async (group) => {
     try {
       const response = await this.connection.invoke('CreateGroup', group);
@@ -201,39 +248,66 @@ class ChatContainer extends React.Component {
   render() {
     return (
       <div>
-        <Grid>
+        <AppBar position="static" alignitems="center" color="primary">
+          <Toolbar>
+            <Grid container justify="center" wrap="wrap">
+              <Grid item>
+                <Typography variant="h6">Chat App</Typography>
+              </Grid>
+            </Grid>
+          </Toolbar>
+        </AppBar>
+        <div style={{ padding: '36px' }}>
           <CreateGroup onCreateGroup={this.handleCreateGroup} />
-        </Grid>
-        <Grid container>
-          <Grid item xs={4}>
-            {this.state.groupList && (
-              <GroupList
-                onGroupClick={this.handlGroupClick}
-                groupList={this.state.groupList}
-              />
-            )}
+          <Grid container component={Paper} className="chatSection">
+            <Grid item xs={4}>
+              {this.state.groupList && (
+                <GroupList
+                  onGroupClick={this.handlGroupClick}
+                  groupList={this.state.groupList}
+                />
+              )}
+            </Grid>
+            <Grid item xs={8}>
+              {this.state.selectedGroup && (
+                <div>
+                  <Typography variant="h5">
+                    Group Name: {this.state.selectedGroup.title}
+                  </Typography>
+                </div>
+              )}
+              {this.state.anyGroupSelected && (
+                <div>
+                  {!this.state.isUserHasSelectedGroup ? (
+                    <Button
+                      style={{ margin: '25px' }}
+                      onClick={this.handleJoinGroup}
+                      variant="contained"
+                      color="primary"
+                    >
+                      Join to Group
+                    </Button>
+                  ) : (
+                    <div>
+                      <Button
+                        style={{ margin: '14px' }}
+                        onClick={this.handleLeftGroup}
+                        variant="contained"
+                        color="primary"
+                      >
+                        Left the Group
+                      </Button>
+                      <Chat
+                        onSendMessage={this.sendMessage}
+                        chat={this.state.selectedGroup.chat.current}
+                      ></Chat>
+                    </div>
+                  )}
+                </div>
+              )}
+            </Grid>
           </Grid>
-          <Grid item xs={8}>
-            {this.state.anyGroupSelected && (
-              <div>
-                {!this.state.isUserHasSelectedGroup ? (
-                  <Button
-                    onClick={this.handleJoinGroup}
-                    variant="contained"
-                    color="primary"
-                  >
-                    Join to Group
-                  </Button>
-                ) : (
-                  <Chat
-                    onSendMessage={this.sendMessage}
-                    chat={this.state.selectedGroup.chat.current}
-                  ></Chat>
-                )}
-              </div>
-            )}
-          </Grid>
-        </Grid>
+        </div>
       </div>
     );
   }

@@ -4,9 +4,8 @@ import ChatInput from './ChatInput';
 const Chat = (props) => {
   return (
     <div>
-      <ChatInput sendMessage={props.onSendMessage} />
-      <hr />
       {props.chat && <ChatWindow chat={props.chat} />}
+      <ChatInput sendMessage={props.onSendMessage} />
     </div>
   );
 };

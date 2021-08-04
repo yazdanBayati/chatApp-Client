@@ -8,7 +8,7 @@ export const buildConention = (auth) => {
         return auth.token;
       },
     })
-    .configureLogging(LogLevel.Trace)
+    .configureLogging(LogLevel.None)
     .withAutomaticReconnect()
     // .withHubProtocol(new MessagePackHubProtocol())
     .build();

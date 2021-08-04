@@ -86,7 +86,7 @@ class ChatContainer extends React.Component {
       (x) => x.groupId === item.id
     ); // if user doesn't have this group show the join button
 
-    if (isUserHasSelectedGroup && !item.seen) {
+    if (isUserHasSelectedGroup) {
       item.seen = true;
       this.setState((prevSate) => {
         return {

@@ -93,7 +93,9 @@ class ChatContainer extends React.Component {
 
       var group = groups.filter((x) => x.id === item.id);
 
-      group.chat.current = [];
+      if (group.chat) {
+        group.chat.current = [];
+      }
 
       if (item.chat) {
         item.chat.current = [];
